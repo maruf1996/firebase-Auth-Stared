@@ -1,13 +1,19 @@
-import React from "react";
+import React, { createContext, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "../Header/Header";
 import Footer from "./../Footer/Footer";
-const Main = ({ user, setUser }) => {
+
+export const UserContext=createContext('');
+
+const Main = () => {
+  const [user,setUser]=useState('');
   return (
     <div>
+      <UserContext.Provider value={[user,setUser]}>
       <Header></Header>
       <Outlet></Outlet>
       <Footer></Footer>
+      </UserContext.Provider>
     </div>
   );
 };

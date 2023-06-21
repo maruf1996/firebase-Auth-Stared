@@ -1,17 +1,14 @@
-import { useState } from "react";
-import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   createBrowserRouter,
   RouterProvider,
-  Route,
-  Link,
 } from "react-router-dom";
-import Main from "./components/Layout/Main";
+import "./App.css";
+import About from "./components/About/About";
 import Home from "./components/Home/Home";
+import Main from "./components/Layout/Main";
 import Login from "./components/Login/Login";
 import Registration from "./components/Registration/Registration";
-import About from "./components/About/About";
 
 function App() {
   const router = createBrowserRouter([

@@ -1,7 +1,110 @@
-import React, { useEffect, useState } from "react";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile } from "firebase/auth";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
+import app from "../../Hook/firebaseConfig";
+import useFirebase from "../../Hook/useFirebase";
+import { UserContext } from "../Layout/Main";
+
 
 const Registration = () => {
+  const [name,setName]=useState('')
+  const [email,setEmail]=useState('')
+  const [password,setPassword]=useState('')
+  const [error,setError]=useState('')
+  const [isDisabled,setIsDisabled]=useState(true)
+
+  const [user,setUser]=useContext(UserContext)
+  const {signInGoogle}=useFirebase()
+  
+  const auth = getAuth(app);
+
+
+  const handleName=(e)=>{
+    setName(e.target.value)
+  }
+  const handleEmail = (e) => {
+    const test = /\S+@\S+\.\S+/.test(e.target.value);
+    if (!test) {
+      setError("please give a valid email");
+      return;
+    }
+    setEmail(e.target.value);
+    setError("");
+  };
+  const handlePassword = (e) => {
+    if (!/(?=.{8,})/.test(e.target.value)) {
+      setError("password must be 8 character");
+      return;
+    }
+
+    if (!/(?=.*[a-zA-Z])/.test(e.target.value)) {
+      setError("password should have Upper letter!!");
+      return;
+    }
+    if (!/(?=.*[!#@$%&? "])/.test(e.target.value)) {
+      setError("password should have special character!!");
+      return;
+    }
+
+    setError("");
+    setPassword(e.target.value);
+  };
+
+
+  const handleRegister=(e)=>{
+    e.preventDefault();
+    if((name,email,password)){
+      createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const currentUser = userCredential.user;
+        Swal.fire({
+          icon: 'success',
+          title: 'Sign In',
+          text: 'User Sign in Successfulluy',
+        })
+        setUser(currentUser)
+        updateName()
+        verify()
+        console.log(currentUser)
+        setError('')
+        // ...
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        setError(errorMessage)
+        // ..
+      });
+    }
+    else {
+      setError("please fil out all the input");
+      return;
+    }
+  }
+
+
+    const updateName=()=>{
+    updateProfile(auth.currentUser, {
+      displayName: name
+    }).then(() => {
+      // Profile updated!
+      // ...
+    }).catch((error) => {
+      // An error occurred
+      // ...
+    });
+      }
+
+    const verify=()=>{
+      sendEmailVerification(auth.currentUser)
+  .then(() => {
+    // Email verification sent!
+    // ...
+  });
+    }
+
+
   return (
     <div className="mt-5">
       <div className="main-container d-flex container justify-content-between align-items-center">
@@ -14,21 +117,24 @@ const Registration = () => {
         </div>
         <div className="register-form  w-100">
           <div className="input-box">
-            <p className="text-danger">{"error"}</p>
-            <form action="">
+            <p className="text-danger">{error}</p>
+            <form action="" onSubmit={handleRegister}>
               <input
+              onBlur={handleName}
                 className="form-control p-3 m-2"
                 type="text"
                 placeholder="Enter your name"
                 required
               />
               <input
+              onBlur={handleEmail}
                 className="form-control p-3 m-2"
                 type="email"
                 placeholder="Email"
                 required
               />
               <input
+              onBlur={handlePassword}
                 className="form-control p-3 m-2"
                 type="password"
                 placeholder="password"
@@ -41,18 +147,21 @@ const Registration = () => {
                   </small>
                 </Link>
               </p>
-              <input className="p-2" type="checkbox" />{" "}
+              <input 
+              onClick={()=>setIsDisabled(!isDisabled)} className="p-2" type="checkbox" />{" "}
               <span className="mb-3">accept term & condition</span>
               <br />
               <button
                 type="submit"
                 className="btn btn-info p-3 w-50 mt-3 fw-bold text-white"
+                disabled={isDisabled}
               >
                 Register
               </button>
             </form>
           </div>
-          <button className="btn mt-3 border d-flex align-items-center justify-content-evenly p-2 m-auto">
+          <button
+          onClick={signInGoogle} className="btn mt-3 border d-flex align-items-center justify-content-evenly p-2 m-auto">
             <img
               className="w-25 image-fluid btn-image"
               src="https://img.icons8.com/color/344/google-logo.png"
